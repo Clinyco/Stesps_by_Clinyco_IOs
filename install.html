@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Descarga Clínyco App</title>
+<meta name="theme-color" content="#0e1e54">
+<link rel="manifest" href="/manifest.json">
+<style>
+  :root{ --azul:#0e1e54; --rosa:#e60e68; --blanco:#fff; --borde:rgba(255,255,255,.18); }
+  html,body{height:100%}
+  body{margin:0;background:var(--azul);color:var(--blanco);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+  .wrap{min-height:100%;display:grid;place-items:center;padding:24px}
+  .card{max-width:720px;width:100%;background:rgba(255,255,255,.06);border:1px solid var(--borde);border-radius:20px;box-shadow:0 12px 40px rgba(0,0,0,.35);padding:24px}
+  h1{margin:0 0 8px;font-size:28px}
+  p{margin:10px 0 0;line-height:1.5}
+  .btn{display:inline-block;margin-top:16px;background:var(--rosa);color:#fff;border:0;border-radius:14px;padding:14px 18px;font-weight:600;cursor:pointer}
+  .ghost{display:inline-block;margin-top:10px;color:#e2e8f0}
+  .logo{display:flex;gap:14px;align-items:center;margin-bottom:10px}
+  .logo .mark{width:56px;height:56px;border-radius:12px;background:#0b1948;display:grid;place-items:center;border:1px solid var(--borde)}
+  .mono{font-size:12px;opacity:.8}
+  .ios-tip{margin-top:14px;padding:12px;border-radius:12px;background:rgba(255,255,255,.08);border:1px dashed var(--borde);display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="logo">
+      <div class="mark">✨</div>
+      <div>
+        <h1>Descarga Clínyco App</h1>
+        <div class="mono">Se instala en tu pantalla de inicio</div>
+      </div>
+    </div>
+    <p>Para continuar, instala la app en tu dispositivo. Es ligera, funciona sin conexión y no requiere permisos.</p>
+    <button id="install" class="btn">Instalar ahora</button>
+    <div><a id="abrir" class="ghost" href="#">¿Ya la instalaste? Abrir la app</a></div>
+    <div id="iosTip" class="ios-tip">En iPhone: toca <b>Compartir</b> (icono ⬆️) y luego <b>Añadir a pantalla de inicio</b>.</div>
+  </div>
+</div>
+
+<script>
+function buildAppUrl(){
+  const u = new URL("/", location.origin);
+  const q = new URLSearchParams(location.search);
+  if(q.get("zid")) u.searchParams.set("zid", q.get("zid"));
+  if(q.get("mode")) u.searchParams.set("mode", q.get("mode"));
+  return u.toString();
+}
+const appUrl = buildAppUrl();
+document.getElementById("abrir").href = appUrl;
+
+const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+if(isStandalone){ location.replace(appUrl); }
+
+let deferredPrompt = null;
+const btn = document.getElementById("install");
+window.addEventListener("beforeinstallprompt", (e)=>{
+  e.preventDefault();
+  deferredPrompt = e;
+  btn.style.display = "inline-block";
+});
+btn.addEventListener("click", async ()=>{
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    location.href = appUrl;
+  }else{
+    location.href = appUrl;
+  }
+});
+
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+if(isIOS && isSafari){
+  document.getElementById("iosTip").style.display = "block";
+  btn.textContent = "Abrir e instalar (iPhone)";
+}
+</script>
+</body>
+</html>
