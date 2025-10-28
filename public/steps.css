@@ -1,0 +1,71 @@
+:root {
+  --brand-color-primary: #e60e68;
+  --brand-color-accent: #ffeff6;
+  --brand-font: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: var(--brand-font);
+  background: #fff;
+  color: #333;
+}
+
+.header {
+  background: var(--brand-color-accent);
+  padding: 24px;
+  border-bottom: 4px solid var(--brand-color-primary);
+}
+
+.header h1 {
+  margin: 0;
+  color: var(--brand-color-primary);
+}
+
+main {
+  padding: 24px;
+  max-width: 840px;
+  margin: 0 auto;
+}
+
+.step-list {
+  list-style: none;
+  padding: 0;
+}
+
+.step-list li {
+  background: #faf5f8;
+  border: 1px solid #f1d7e3;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+button {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  background: var(--brand-color-primary);
+  color: white;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #f1d7e3;
+  color: #333;
+}
+
+.notice {
+  background: #fff3f8;
+  border-left: 4px solid var(--brand-color-primary);
+  padding: 12px;
+  margin: 16px 0;
+}
+\n.hidden { display: none !important; }
+\na.button { text-decoration: none; }

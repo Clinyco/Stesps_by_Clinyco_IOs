@@ -3,20 +3,31 @@
 <head>
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#e60e68">
-<link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0e1e54">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#e60e68">
+<link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#e60e68">
+
+<link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Clínyco Steps">
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <title>Clínyco — Steps</title>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0e1e54">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#e60e68">
 <style>
   :root{ --azul-oscuro:#0e1e54; --fucsia:#e60e68; --azul-sec:#0071b8; --purpura:#6a2ca1; --teal:#008385; --burdeos:#942151; --texto:#ffffff; --linea:rgba(255,255,255,.12); }
   *{box-sizing:border-box} html,body{height:auto; min-height:100%}
@@ -587,6 +598,12 @@ document.getElementById('send')?.addEventListener('click', resetUnread);
 })();
 
 </script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
+</script>
+
 </body>
 
 </html>

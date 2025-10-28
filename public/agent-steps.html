@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Pasos para agentes – Clínyco Steps</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/steps.css" />
+  </head>
+  <body data-mode="agent">
+    <header class="header">
+      <h1>Pasos del agente</h1>
+      <p class="notice">La información es educativa y no reemplaza orientación profesional sanitaria.</p>
+    </header>
+    <main>
+      <div class="actions">
+        <a id="contact-agent" class="button" href="#">Escribir a mi Ejecutiva de Gestión</a>
+        <button id="edit-steps" type="button" class="secondary">Editar</button>
+        <button id="save-steps" type="button" class="hidden">Guardar</button>
+        <button id="cancel-steps" type="button" class="hidden">Cancelar</button>
+      </div>
+      <textarea id="steps-editor" class="hidden" rows="10" placeholder="Escribe cada paso en una línea"></textarea>
+      <ol id="steps-preview" class="step-list">
+        <li>Planifica las llamadas diarias de seguimiento.</li>
+        <li>Actualiza Zendesk Sell con notas del cliente.</li>
+        <li>Comparte los próximos hitos con el equipo.</li>
+      </ol>
+    </main>
+    <script src="/steps.js"></script>
+  </body>
+</html>
