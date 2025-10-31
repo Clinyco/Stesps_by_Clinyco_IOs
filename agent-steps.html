@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es" data-mode="agent">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pasos – Agente • Clinyco</title>
+  <link rel="icon" type="image/png" sizes="180x180" href="/icon-180.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png" />
+  <link rel="stylesheet" href="/steps.css" />
+  <meta name="color-scheme" content="light only">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="brand">
+        <img src="/icon-180.png" alt="Logo Clinyco" />
+        <span>Clinyco — Agente</span>
+      </div>
+      <div class="toolbar">
+        <a id="mailtoAgent" class="btn btn-primary">Escribir a mi Ejecutiva de Gestión</a>
+        <span class="badge">Completados: <strong data-steps-count>0/0</strong></span>
+        <button id="btnEdit" class="btn btn-outline">Editar</button>
+        <button id="btnSave" class="btn btn-primary" disabled>Guardar</button>
+        <button id="btnCancel" class="btn" disabled>Cancelar</button>
+      </div>
+    </header>
+
+    <main class="card">
+      <div class="steps-head">
+        <h1 id="steps-title" style="margin:0;">Pasos (modo agente)</h1>
+      </div>
+      <ol class="steps-list" role="list" aria-labelledby="steps-title">
+        <li class="step" data-status="done">
+          <div>
+            <div class="step-title">Enviar antecedentes iniciales</div>
+            <div class="step-desc">Adjuntar documentos en formato PDF.</div>
+          </div>
+          <button class="step-toggle" data-toggle-status aria-label="Alternar estado">✓</button>
+        </li>
+        <li class="step" data-status="pending">
+          <div>
+            <div class="step-title">Agendar reunión de verificación</div>
+            <div class="step-desc">Coordinación por correo o WhatsApp.</div>
+          </div>
+          <button class="step-toggle" data-toggle-status aria-label="Alternar estado">✓</button>
+        </li>
+        <li class="step" data-status="pending">
+          <div>
+            <div class="step-title">Firmar autorización</div>
+            <div class="step-desc">Enlace seguro para firma.</div>
+          </div>
+          <button class="step-toggle" data-toggle-status aria-label="Alternar estado">✓</button>
+        </li>
+      </ol>
+      <p class="footer">
+        Los cambios se guardan localmente por defecto. Para persistencia multiusuario, conecta este flujo al backend (Zendesk Sell) protegido por RBAC de agente.
+      </p>
+    </main>
+  </div>
+  <script src="/steps.js"></script>
+</body>
+</html>
