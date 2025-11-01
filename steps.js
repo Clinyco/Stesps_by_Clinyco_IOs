@@ -4,6 +4,8 @@
     agentEmail: 'ejecutiva@clinyco.cl',
     originalData: [],
     storageKeyValue: null,
+    agentEmail: null,
+    originalHTML: null,
 
     init({ mode = 'client' } = {}) {
       this.mode = mode;
@@ -193,6 +195,29 @@
         this.originalData = this.collectSteps();
         this.enableEditing(list, true);
         setButtons(true);
+      const storageKey = `steps:${location.pathname}`;
+
+      const takeSnapshot = () => list.innerHTML;
+      const restoreSnapshot = (html) => { list.innerHTML = html; };
+
+      const saved = localStorage.getItem(storageKey);
+      if (saved) restoreSnapshot(saved);
+
+      const enableEditing = (enabled) => {
+        list.querySelectorAll('.step .step-title').forEach(el => {
+          el.setAttribute('contenteditable', enabled ? 'true' : 'false');
+          el.classList.toggle('editable', !!enabled);
+        });
+        btnSave.disabled   = !enabled;
+        btnCancel.disabled = !enabled;
+        btnEdit.disabled   = !!enabled;
+      };
+
+      this.originalHTML = takeSnapshot();
+      this.updateCounts();
+
+      btnEdit?.addEventListener('click', () => {
+        enableEditing(true);
         list.querySelector('.step .step-title')?.focus();
       });
 
@@ -212,6 +237,18 @@
         this.toast('Cambios guardados localmente.');
         const key = this.getChecklistKey();
         await this.persistChecklistToSell(key, data);
+        restoreSnapshot(this.originalHTML);
+        enableEditing(false);
+        this.updateCounts();
+      });
+
+      btnSave?.addEventListener('click', () => {
+        const html = takeSnapshot();
+        localStorage.setItem(storageKey, html);
+        this.originalHTML = html;
+        enableEditing(false);
+        this.updateCounts();
+        this.toast('Cambios guardados localmente.');
       });
 
       list.addEventListener('click', (e) => {
@@ -221,6 +258,7 @@
           if (!li) return;
           const nextStatus = li.getAttribute('data-status') === 'done' ? 'pending' : 'done';
           li.setAttribute('data-status', nextStatus);
+          li.dataset.status = li.dataset.status === 'done' ? 'pending' : 'done';
           this.updateCounts();
         }
       });
