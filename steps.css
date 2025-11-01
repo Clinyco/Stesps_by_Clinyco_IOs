@@ -45,6 +45,7 @@ body{
   counter-reset: step; list-style:none; padding:0; margin:0; display:grid; gap:12px;
 }
 .step{
+  border:1px solid var(--brand-border); border-radius:10px; padding:14px; display:flex; flex-direction:column; gap:12px; background:#fff;
   border:1px solid var(--brand-border); border-radius:10px; padding:14px; display:flex; align-items:flex-start; gap:12px; background:#fff;
 }
 .step::before{
@@ -54,10 +55,26 @@ body{
 .step[data-status="done"] { border-color: rgba(0,191,166,0.4); background: linear-gradient(0deg, rgba(0,191,166,0.06), rgba(0,191,166,0.06)), #fff; }
 .step-title{ font-weight:600; }
 .step-desc{ color: var(--brand-color-muted); font-size: 14px; margin-top:4px; }
+.step-header{ display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+.step-main{ display:flex; flex-direction:column; gap:6px; }
+.step-info{ font-size:13px; color: var(--brand-color-primary); text-decoration:none; }
+.step-info[hidden]{ display:none; }
+.step-info:hover{ text-decoration:underline; }
 .step-toggle{
   border:1px solid var(--brand-border); background:#fff; border-radius:8px; padding:6px 8px; font-size:12px; cursor:pointer;
 }
 [data-mode="client"] .step-toggle{ display:none; }
+[data-mode="client"] .step-note-wrapper{ display:none; }
+.step-note-wrapper{ display:flex; flex-direction:column; gap:6px; }
+.step-note-label{ font-size:12px; color: var(--brand-color-muted); }
+.step-note{
+  width: 100%;
+  border:1px solid var(--brand-border); border-radius:8px; padding:8px; font-family: var(--brand-font);
+  font-size: 14px; min-height: 80px; resize: vertical;
+}
+.step-note[readonly]{ background:#F3F4F6; cursor:not-allowed; }
+.step-title.editable, .step-desc[contenteditable="true"]{ outline:2px solid rgba(11,95,255,0.2); border-radius:6px; padding:2px; }
+.step-desc[contenteditable="true"]{ min-height:20px; }
 .toast{
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   background: #111827; color: #fff; padding: 10px 14px; border-radius: 10px; opacity: 0; transition: opacity .2s, transform .2s;
