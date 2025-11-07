@@ -84,5 +84,35 @@
     </main>
   </div>
   <script src="/steps.js"></script>
+  <script>
+(async function(){
+  const key = new URLSearchParams(location.search).get('key') || 'client-onboarding-v1';
+  try{
+    const r = await fetch('/.netlify/functions/gas-steps?key='+encodeURIComponent(key));
+    if (!r.ok) return;
+    const { data } = await r.json();
+    if (!Array.isArray(data)) return;
+    const list = document.querySelector('.steps-list');
+    if (!list) return;
+    list.innerHTML = '';
+    data.forEach((s) => {
+      const li = document.createElement('li');
+      li.className = 'step';
+      li.dataset.status = s.status;
+      li.innerHTML = `
+        <div>
+          <div class="step-title">${s.title}</div>
+          ${s.desc ? `<div class="step-desc">${s.desc}</div>` : ''}
+          ${s.href ? `<a class="step-info" href="${s.href}" target="_blank" rel="noopener">Más info ↗</a>` : ''}
+        </div>
+        <button class="step-toggle" data-toggle-status aria-label="Marcar paso">✓</button>
+      `;
+      list.appendChild(li);
+    });
+    window.Steps?.updateCounts?.();
+  }catch(e){}
+})();
+</script>
+
 </body>
 </html>
