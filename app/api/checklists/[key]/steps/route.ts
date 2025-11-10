@@ -8,10 +8,11 @@ function toJson(data: unknown, init: ResponseInit = {}) {
   return NextResponse.json(data, init);
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { key: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { key: string } }) {
   try {
     const key = params.key;
-    const result = await listStepsByChecklistKey(key);
+    const dealId = req.nextUrl.searchParams.get('deal_id') ?? undefined;
+    const result = await listStepsByChecklistKey(key, { dealId });
     const steps = result.map((item) => item.step).sort((a, b) => a.order - b.order);
     const response = toJson({ data: steps });
     response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=60');
@@ -28,8 +29,11 @@ export async function POST(req: NextRequest, { params }: { params: { key: string
     const key = params.key;
     const email = assertAgent(req as unknown as Request);
     const payload = await req.json();
-    const step = buildStepFromPayload(payload, email, { checklist_key: key } as Partial<Step>);
-    const { step: created } = await createStep(key, step);
+    const queryDealId = req.nextUrl.searchParams.get('deal_id') ?? undefined;
+    const overrides: Partial<Step> = { checklist_key: key, deal_id: queryDealId ?? undefined };
+    const step = buildStepFromPayload(payload, email, overrides);
+    const normalizedDealId = step.deal_id ?? (queryDealId ? queryDealId.trim() || undefined : undefined);
+    const { step: created } = await createStep(key, step, { dealId: normalizedDealId });
     return toJson({ data: created }, { status: 201 });
   } catch (error) {
     const status = (error as any)?.status ?? 500;

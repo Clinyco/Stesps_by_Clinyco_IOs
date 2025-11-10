@@ -39,6 +39,15 @@ export function buildStepFromPayload(input: any, email: string, overrides: Parti
   if (supportTicketId !== undefined && !Number.isFinite(supportTicketId)) {
     throw Object.assign(new Error('support_ticket_id inválido'), { status: 422 });
   }
+  const dealIdInput = input.deal_id ?? overrides.deal_id;
+  let dealId: string | undefined;
+  if (dealIdInput !== undefined) {
+    if (typeof dealIdInput !== 'string') {
+      throw Object.assign(new Error('deal_id inválido'), { status: 422 });
+    }
+    const trimmed = dealIdInput.trim();
+    dealId = trimmed || undefined;
+  }
 
   const step: Step = {
     id: typeof input.id === 'string' && input.id ? input.id : overrides.id || generateId(),
@@ -49,11 +58,13 @@ export function buildStepFromPayload(input: any, email: string, overrides: Parti
     status,
     order,
     support_ticket_id: supportTicketId,
+    deal_id: dealId,
     updated_by: email,
     updated_at: new Date().toISOString(),
   };
 
-  (step as Step & { checklist_key?: string }).checklist_key = (overrides as Step & { checklist_key?: string }).checklist_key ?? input.checklist_key;
+  (step as Step & { checklist_key?: string }).checklist_key =
+    (overrides as Step & { checklist_key?: string }).checklist_key ?? input.checklist_key;
 
   assertStepIsSafe(step);
   return step;

@@ -7,6 +7,7 @@ export type Step = {
   status: 'pending' | 'done';
   order: number;
   support_ticket_id?: number; // opcional
+  deal_id?: string;           // deal asociado (tags en Sell)
   updated_by: string;         // email agente
   updated_at: string;         // ISO
 };

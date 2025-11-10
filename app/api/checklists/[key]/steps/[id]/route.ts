@@ -13,8 +13,11 @@ export async function PUT(req: NextRequest, { params }: { params: { key: string;
     const key = params.key;
     const id = params.id;
     const email = assertAgent(req as unknown as Request);
+    const queryDealId = req.nextUrl.searchParams.get('deal_id') ?? undefined;
     const payload = await req.json();
-    const existing = await getStepById(key, id);
+    const payloadDealId = typeof payload.deal_id === 'string' ? payload.deal_id.trim() : undefined;
+    const lookupDealId = payloadDealId ?? (queryDealId ? queryDealId.trim() || undefined : undefined);
+    const existing = await getStepById(key, id, { dealId: lookupDealId });
     if (!existing) {
       return toJson({ error: 'Paso no encontrado' }, { status: 404 });
     }
@@ -26,13 +29,15 @@ export async function PUT(req: NextRequest, { params }: { params: { key: string;
       return toJson({ error: 'Conflicto de versión' }, { status: 409 });
     }
 
-    const mergedInput = { ...serverStep, ...payload, id };
+    const effectiveDealId = payloadDealId ?? serverStep.deal_id ?? (queryDealId ? queryDealId.trim() || undefined : undefined);
+    const mergedInput = { ...serverStep, ...payload, id, deal_id: effectiveDealId };
     const overrides: Partial<Step> = {
       ...serverStep,
       checklist_key: (serverStep as Step & { checklist_key?: string }).checklist_key ?? key,
+      deal_id: effectiveDealId,
     };
     const step = buildStepFromPayload(mergedInput, email, overrides);
-    const { step: updated } = await updateStep(existing.noteId, key, step);
+    const { step: updated } = await updateStep(existing.noteId, key, step, { dealId: effectiveDealId });
     return toJson({ data: updated });
   } catch (error) {
     const status = (error as any)?.status ?? 500;
@@ -46,7 +51,9 @@ export async function DELETE(req: NextRequest, { params }: { params: { key: stri
     const key = params.key;
     const id = params.id;
     assertAgent(req as unknown as Request);
-    const existing = await getStepById(key, id);
+    const queryDealId = req.nextUrl.searchParams.get('deal_id') ?? undefined;
+    const dealId = queryDealId ? queryDealId.trim() || undefined : undefined;
+    const existing = await getStepById(key, id, { dealId });
     if (!existing) {
       return new NextResponse(null, { status: 204 });
     }

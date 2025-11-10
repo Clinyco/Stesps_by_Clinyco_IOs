@@ -70,6 +70,7 @@ export function serializeStepToNoteContent(step: Step): string {
     ['status', step.status],
     ['order', step.order],
     ['support_ticket_id', step.support_ticket_id ?? ''],
+    ['deal_id', step.deal_id ?? ''],
     ['updated_by', step.updated_by],
     ['updated_at', step.updated_at],
   ] as const;
@@ -116,6 +117,7 @@ export function parseNoteContentToStep(content: string): Step {
     support_ticket_id: supportTicketId,
     updated_by: data.updated_by || 'unknown@clinyco.cl',
     updated_at: updatedAt,
+    deal_id: data.deal_id ? data.deal_id.trim() || undefined : undefined,
   };
 
   if (data.checklist_key) {
@@ -125,10 +127,15 @@ export function parseNoteContentToStep(content: string): Step {
   return step;
 }
 
-export function makeStepTags(key: string, stepId: string): string[] {
+export function makeStepTags(key: string, stepId: string, dealId?: string): string[] {
   const normalizedKey = key.trim();
   const normalizedStep = stepId.trim();
   if (!normalizedKey) throw new Error('Checklist key is required to build tags');
   if (!normalizedStep) throw new Error('Step id is required to build tags');
-  return ['step', `checklist:${normalizedKey}`, `step:${normalizedStep}`];
+  const tags = ['step', `checklist:${normalizedKey}`, `step:${normalizedStep}`];
+  const normalizedDeal = dealId?.trim();
+  if (normalizedDeal) {
+    tags.push(`deal:${normalizedDeal}`);
+  }
+  return tags;
 }

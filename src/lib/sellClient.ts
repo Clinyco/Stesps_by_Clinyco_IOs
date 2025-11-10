@@ -24,6 +24,10 @@ type SellNote = {
   tags?: string[];
 };
 
+type StepListOptions = {
+  dealId?: string;
+};
+
 async function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -96,10 +100,18 @@ export async function sellFetch(path: string, init: RequestInit = {}): Promise<R
   throw lastError instanceof Error ? lastError : new Error('Unknown error calling Zendesk Sell');
 }
 
-function ensureChecklist(step: Step, key: string): Step {
-  const stepWithKey = { ...step } as Step & { checklist_key?: string };
-  stepWithKey.checklist_key = key;
-  return stepWithKey;
+function normalizeDealId(dealId?: string): string | undefined {
+  const trimmed = dealId?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+function ensureMetadata(step: Step, key: string, dealId?: string): Step {
+  const stepWithMeta = { ...step } as Step & { checklist_key?: string; deal_id?: string };
+  stepWithMeta.checklist_key = key;
+  if (dealId !== undefined) {
+    stepWithMeta.deal_id = dealId;
+  }
+  return stepWithMeta;
 }
 
 function ensureConfigured() {
@@ -108,43 +120,48 @@ function ensureConfigured() {
   }
 }
 
-function matchesChecklistTags(tags: string[] | undefined, key: string, stepId?: string): boolean {
+function matchesChecklistTags(tags: string[] | undefined, key: string, stepId?: string, dealId?: string): boolean {
   if (!tags || tags.length === 0) return false;
   const hasChecklist = tags.includes(`checklist:${key}`);
   const hasStep = stepId ? tags.includes(`step:${stepId}`) : true;
-  return hasChecklist && hasStep && tags.includes('step');
+  const hasDeal = dealId ? tags.includes(`deal:${dealId}`) : true;
+  return hasChecklist && hasStep && hasDeal && tags.includes('step');
 }
 
-export async function listStepsByChecklistKey(key: string): Promise<{ noteId: string; step: Step }[]> {
+export async function listStepsByChecklistKey(key: string, options: StepListOptions = {}): Promise<{ noteId: string; step: Step }[]> {
   ensureConfigured();
   const response = await sellFetch(`/v2/notes?resource_type=contact&resource_id=${encodeURIComponent(SELL_TIPS_CONTACT_ID)}&per_page=100&sort_by=updated_at:desc`);
   const payload = await response.json();
   const notes = unwrap<SellNote>(payload);
+  const normalizedDealId = normalizeDealId(options.dealId);
 
-  const filtered = notes.filter((note) => matchesChecklistTags(note.tags, key));
+  const filtered = notes.filter((note) => matchesChecklistTags(note.tags, key, undefined, normalizedDealId));
   return filtered.map((note) => {
     const step = parseNoteContentToStep(note.content);
-    (step as Step & { checklist_key?: string }).checklist_key = key;
+    const dealId = normalizeDealId((step as Step & { deal_id?: string }).deal_id ?? normalizedDealId);
+    const withMeta = ensureMetadata(step, key, dealId);
     return {
       noteId: String(note.id),
-      step,
+      step: withMeta,
     };
   }).sort((a, b) => a.step.order - b.step.order);
 }
 
-export async function getStepById(key: string, stepId: string): Promise<{ noteId: string; step: Step } | null> {
-  const all = await listStepsByChecklistKey(key);
+export async function getStepById(key: string, stepId: string, options: StepListOptions = {}): Promise<{ noteId: string; step: Step } | null> {
+  const all = await listStepsByChecklistKey(key, options);
   return all.find(({ step }) => step.id === stepId) ?? null;
 }
 
-export async function createStep(key: string, step: Step): Promise<{ noteId: string; step: Step }> {
+export async function createStep(key: string, step: Step, options: StepListOptions = {}): Promise<{ noteId: string; step: Step }> {
   ensureConfigured();
+  const normalizedDealId = normalizeDealId(options.dealId ?? step.deal_id);
+  const stepWithMeta = ensureMetadata(step, key, normalizedDealId);
   const body = {
     data: {
       resource_type: 'contact',
       resource_id: SELL_TIPS_CONTACT_ID,
-      content: serializeStepToNoteContent(ensureChecklist(step, key)),
-      tags: makeStepTags(key, step.id),
+      content: serializeStepToNoteContent(stepWithMeta),
+      tags: makeStepTags(key, step.id, normalizedDealId),
       type: 'regular',
     },
     meta: { type: 'note' },
@@ -161,16 +178,19 @@ export async function createStep(key: string, step: Step): Promise<{ noteId: str
     throw new Error('Respuesta inesperada al crear nota de paso');
   }
   const createdStep = parseNoteContentToStep(note.content);
-  (createdStep as Step & { checklist_key?: string }).checklist_key = key;
-  return { noteId: String(note.id), step: createdStep };
+  const dealId = normalizeDealId((createdStep as Step & { deal_id?: string }).deal_id ?? normalizedDealId);
+  const withMeta = ensureMetadata(createdStep, key, dealId);
+  return { noteId: String(note.id), step: withMeta };
 }
 
-export async function updateStep(noteId: string, key: string, step: Step): Promise<{ noteId: string; step: Step }> {
+export async function updateStep(noteId: string, key: string, step: Step, options: StepListOptions = {}): Promise<{ noteId: string; step: Step }> {
   ensureConfigured();
+  const normalizedDealId = normalizeDealId(options.dealId ?? step.deal_id);
+  const stepWithMeta = ensureMetadata(step, key, normalizedDealId);
   const body = {
     data: {
-      content: serializeStepToNoteContent(ensureChecklist(step, key)),
-      tags: makeStepTags(key, step.id),
+      content: serializeStepToNoteContent(stepWithMeta),
+      tags: makeStepTags(key, step.id, normalizedDealId),
     },
     meta: { type: 'note' },
   };
@@ -186,8 +206,9 @@ export async function updateStep(noteId: string, key: string, step: Step): Promi
     throw new Error('Respuesta inesperada al actualizar nota de paso');
   }
   const updatedStep = parseNoteContentToStep(note.content);
-  (updatedStep as Step & { checklist_key?: string }).checklist_key = key;
-  return { noteId: String(note.id), step: updatedStep };
+  const dealId = normalizeDealId((updatedStep as Step & { deal_id?: string }).deal_id ?? normalizedDealId);
+  const withMeta = ensureMetadata(updatedStep, key, dealId);
+  return { noteId: String(note.id), step: withMeta };
 }
 
 export async function deleteStep(noteId: string): Promise<void> {
